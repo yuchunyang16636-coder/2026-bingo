@@ -265,7 +265,7 @@ def get_base64_of_bin_file(bin_file):
     except:
         return ""
 
-img_base64 = get_base64_of_bin_file("0003.jpg")
+img_base64 = get_base64_of_bin_file("0004.jpg")
 
 # ==========================================
 # 2. 50 顆球動畫生成器
