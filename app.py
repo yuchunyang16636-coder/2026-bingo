@@ -542,6 +542,9 @@ st.markdown("""
         box-shadow: 2px 4px 8px rgba(0,0,0,0.5);
     }
     
+    /* ==========================================
+       🎯 全域大按鈕預設樣式 (主機端用)
+       ========================================== */
     div[data-testid="stButton"] {
         display: flex !important;
         justify-content: center !important;
@@ -567,8 +570,58 @@ st.markdown("""
         color: white !important;
         line-height: 1 !important;
     }
+    
+    /* ==========================================
+       🎲 手機端：一括隨機生成按鈕 (大幅縮小並變色)
+       ========================================== */
+    .st-key-random_btn div[data-testid="stButton"] { 
+        justify-content: flex-start !important; 
+    }
+    .st-key-random_btn div[data-testid="stButton"] > button {
+        width: auto !important;
+        max-width: none !important;
+        height: 45px !important;
+        padding: 0 20px !important;
+        border-radius: 25px !important;
+        background: linear-gradient(to bottom, #5b86e5, #36d1dc) !important; /* 清爽藍綠漸層 */
+        border: 2px solid #fff !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+        margin-bottom: 10px !important;
+    }
+    .st-key-random_btn div[data-testid="stButton"] > button p {
+        font-size: 16px !important;
+        color: white !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
+    }
 
-    /* 🔄 「人數を更新」小按鈕 (需要 Streamlit 1.39 以上才會套用 key 樣式) */
+    /* ==========================================
+       🔒 手機端：確認送出表單按鈕 (亮眼紅橘漸層)
+       ========================================== */
+    div[data-testid="stFormSubmitButton"] {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin-top: 20px !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(to right, #ff416c, #ff4b2b) !important; /* 醒目紅橘漸層 */
+        color: white !important;
+        width: 100% !important;
+        max-width: 400px !important;
+        height: 70px !important;
+        border-radius: 35px !important;
+        border: 3px solid #fff !important;
+        box-shadow: 0 8px 25px rgba(255, 65, 108, 0.6) !important;
+        transition: transform 0.2s !important;
+    }
+    div[data-testid="stFormSubmitButton"] > button p {
+        font-size: 24px !important;
+        font-weight: 900 !important;
+        color: white !important;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.5) !important;
+    }
+
+    /* 🔄 「人數を更新」小按鈕 */
     .st-key-refresh_presence div[data-testid="stButton"] { justify-content: flex-start !important; }
     .st-key-refresh_presence button {
         width: auto !important; height: 44px !important;
@@ -592,13 +645,24 @@ st.markdown("""
     }
 
     @media (max-width: 640px) {
-        div[data-testid="stButton"] > button,
-        div[data-testid="stFormSubmitButton"] > button {
+        div[data-testid="stButton"] > button {
             width: 100% !important;
             max-width: 400px !important;
             height: 60px !important;
         }
-        div[data-testid="stButton"] > button p,
+        div[data-testid="stButton"] > button p {
+            font-size: 22px !important;
+        }
+        /* 避免手機版影響到我們特別獨立設定的按鈕 */
+        .st-key-random_btn div[data-testid="stButton"] > button {
+            height: 45px !important;
+        }
+        .st-key-random_btn div[data-testid="stButton"] > button p {
+            font-size: 16px !important;
+        }
+        div[data-testid="stFormSubmitButton"] > button {
+            height: 65px !important;
+        }
         div[data-testid="stFormSubmitButton"] > button p {
             font-size: 22px !important;
         }
@@ -629,7 +693,6 @@ if mode == "player":
             st.session_state[f"t_{i}"] = ""
 
     # 🆔 辨識這支手機：重新整理、關掉再重新掃 QR 都能找回同一張卡
-    # 優先順序：網址上的 pid → 瀏覽器 cookie → 產生新的
     def get_player_id():
         pid = st.session_state.get("pid")
         if is_valid_pid(pid):
@@ -648,8 +711,7 @@ if mode == "player":
 
     pid = get_player_id()
 
-    # 📶 上線打卡：每 5 秒更新一次，主持人端靠這個統計目前在線人數
-    # (放在最前面，這樣「報名已截止」畫面的人也會被計入)
+    # 📶 上線打卡：每 5 秒更新一次
     def heartbeat():
         touch_presence(pid)
 
@@ -678,7 +740,6 @@ if mode == "player":
     st.markdown('<div class="bingo-title" style="font-size: 2rem;">マイ BINGO カード</div>', unsafe_allow_html=True)
 
     # 🚫 防呆：第一顆球開出後，還沒鎖定卡片的人就不能再加入
-    # (否則可以照著大螢幕已開出的號碼填，直接連線)
     if not st.session_state['card_locked'] and len(load_game_state().get("drawn", [])) > 0:
         st.markdown("""
             <div style="background: rgba(255,255,255,0.15); padding: 18px; border-radius: 14px; text-align: center; border: 2px solid #ffeb3b; margin-top: 20px; color: #fff; font-weight: bold; line-height: 1.6;">
@@ -701,7 +762,8 @@ if mode == "player":
     if not st.session_state['card_locked']:
         st.markdown('<div class="bingo-subtitle">下に25個の数字（1〜99）を入力してください。確定後の変更はできません！</div>', unsafe_allow_html=True)
         
-        if st.button("🎲 一括ランダム生成"):
+        # 加上 key="random_btn" 來套用我們剛剛新寫的縮小版 CSS
+        if st.button("🎲 一括ランダム生成", key="random_btn"):
             new_nums = random.sample(range(1, 100), 25)
             st.session_state['my_card_numbers'] = new_nums
             for i, n in enumerate(new_nums):
@@ -711,7 +773,7 @@ if mode == "player":
         st.write("")
         
         with st.form("bingo_form"):
-            # 👤 暱稱或卡號 (中獎時主持人要靠這個辨識是誰)
+            # 👤 暱稱或卡號
             nick_val = st.text_input(
                 "👤 ニックネーム / カード番号",
                 key="nick",
@@ -735,7 +797,7 @@ if mode == "player":
             st.write("")
             submitted = st.form_submit_button("🔒 数字確定 ＆ カードロック")
 
-        # 🔢 只有 5x5 的數字格跳出數字鍵盤 (暱稱欄位不受影響)
+        # 🔢 只有 5x5 的數字格跳出數字鍵盤
         components.html("""
             <script>
             const applyNumeric = () => {
@@ -842,17 +904,15 @@ if mode == "player":
 
             st.info(f"💡 大螢幕已開出 {len(drawn_list)} 顆球，畫面每 1.5 秒自動同步中！")
 
-        # ⚡ 只讓這一小塊每 1.5 秒自己更新，不用整份程式重跑 (需要 Streamlit 1.37 以上)
+        # ⚡ 只讓這一小塊每 1.5 秒自己更新
         if hasattr(st, "fragment"):
             live_card = st.fragment(run_every="1.5s")(render_live_card)
         else:
-            # 舊版 Streamlit 的備案：退回整頁自動重整
             st_autorefresh(interval=1500, limit=None, key="player_sync")
             live_card = render_live_card
         live_card()
 
     # 🍪 把玩家 ID 也記在瀏覽器 cookie 裡 (一天有效)
-    # 這樣就算網址上的 pid 不見了 (例如重新掃 QR Code)，也能找回同一張卡
     components.html(f"""
         <script>
         try {{
@@ -873,7 +933,6 @@ else:
     drawn = state_data["drawn"]
     round_id = state_data.get("round", "r0")
 
-    # 自動抽球相關設定的預設值 (必須在 toggle / slider 建立之前設定)
     st.session_state.setdefault("auto_draw", False)
     st.session_state.setdefault("auto_interval", 120)
     st.session_state.setdefault("winners_baseline", 0)
@@ -883,18 +942,16 @@ else:
     winners = get_winners(drawn, round_id)
     n_winners = len(winners)
 
-    # 🛑 自動抽球中只要「中獎人數增加」就自動取消自動模式
-    # (這段要放在 toggle 建立之前，才能直接改 session_state)
     if n_winners < st.session_state["winners_baseline"]:
-        st.session_state["winners_baseline"] = n_winners        # 主持人重置後歸零
+        st.session_state["winners_baseline"] = n_winners
     if not st.session_state["auto_draw"]:
-        st.session_state["winners_baseline"] = n_winners        # 手動模式下持續記錄目前人數
+        st.session_state["winners_baseline"] = n_winners
     elif n_winners > st.session_state["winners_baseline"]:
         st.session_state["auto_draw"] = False
         st.session_state["winners_baseline"] = n_winners
         st.session_state["auto_stopped_by_winner"] = True
     if st.session_state["auto_draw"]:
-        st.session_state["auto_stopped_by_winner"] = False      # 重新開啟自動模式就清除提示
+        st.session_state["auto_stopped_by_winner"] = False
 
     # 📷 右上角 QR Code
     if "player_url" not in st.session_state:
@@ -930,7 +987,6 @@ else:
     with col_center:
         machine_placeholder = st.empty()
         machine_placeholder.markdown(render_machine("", "idle"), unsafe_allow_html=True)
-        # 自動抽球中按鈕會反黑且不能按；有人中獎自動停止後會恢復成綠色
         draw_clicked = st.button(
             "🚀 幸運ボタン ",
             use_container_width=True,
@@ -940,9 +996,6 @@ else:
             st.success(f"🎉 当選者が出ました！自動抽球を停止しました（現在 {n_winners} 名）")
 
     # ⏰ 自動定時抽球
-    # 用 st_autorefresh 當計時器：每隔「設定秒數」才會讓頁面重跑一次，
-    # 並用它回傳的計數器判斷「這次重跑是不是計時器觸發的」。
-    # 這樣按按鈕、拉滑桿等其他操作造成的重跑，都不會誤觸發抽球。
     auto_tick_trigger = False
     if st.session_state["auto_draw"]:
         interval_s = int(st.session_state["auto_interval"])
@@ -951,17 +1004,15 @@ else:
 
         tick_count = st_autorefresh(interval=interval_s * 1000, limit=None, key=tick_key)
 
-        # 秒數改變時，清掉舊秒數留下的紀錄
         for k in [k for k in list(st.session_state.keys()) if k.startswith("auto_last_") and k != last_key]:
             del st.session_state[k]
 
         if last_key not in st.session_state:
-            st.session_state[last_key] = tick_count   # 剛開啟時只記錄起點，不抽球
+            st.session_state[last_key] = tick_count
         if tick_count > st.session_state[last_key]:
             st.session_state[last_key] = tick_count
             auto_tick_trigger = True
     else:
-        # 關閉時清掉紀錄，下次開啟才會從頭計時
         for k in [k for k in list(st.session_state.keys()) if k.startswith("auto_last_")]:
             del st.session_state[k]
 
@@ -972,7 +1023,6 @@ else:
             
         machine_placeholder.markdown(render_machine(winner_num, "golden"), unsafe_allow_html=True)
 
-        # ✅ 金球出現之後才寫入共用狀態，手機端這時才會看到新號碼
         pool.remove(winner_num)
         drawn.append(winner_num)
         save_game_state(pool, drawn)
@@ -986,10 +1036,10 @@ else:
         if not pool:
             st.error(" 全部引き終わったよ！ ")
             if auto_tick_trigger:
-                st.session_state["auto_draw"] = False   # 抽完了就自動關閉自動模式
+                st.session_state["auto_draw"] = False
         else:
-            winner = random.choice(pool)   # 先決定號碼，但還不存檔
-            run_draw_animation(winner)     # 金球出現後才會存檔
+            winner = random.choice(pool)
+            run_draw_animation(winner)
             st.rerun()
 
     # 歷史軌道
@@ -1004,10 +1054,9 @@ else:
     with col_set1:
         with st.expander("⚙️ 管理画面"):
             if st.button("⚠️ リセット"):
-                # 換一個新的輪次編號 → 所有手機上的舊卡片立刻失效，可以重新填寫
                 save_game_state(list(range(1, 100)), [], round_id=uuid.uuid4().hex[:8])
                 clear_all_cards()
-                clear_presence()   # 連線中的手機約 5 秒內會重新打卡，人數就會回來
+                clear_presence()
                 st.session_state["winners_baseline"] = 0
                 st.session_state["auto_stopped_by_winner"] = False
                 st.rerun()
@@ -1032,7 +1081,6 @@ else:
             if segno is None:
                 st.warning("尚未安裝 segno，QR Code 無法產生。請在 requirements.txt 加上一行：segno")
 
-    # 🏆 當選者リスト (預設收合，需要時才點開)
     with st.expander(f"🏆 当選者リスト（現在 {n_winners} 名）"):
         if winners:
             st.dataframe(
@@ -1051,9 +1099,6 @@ else:
         else:
             st.write("まだ当選者はいません。")
 
-    # 👥 接続人数チェック (預設收合)：用來跟簽到人數做比對
-    # 刻意不做自動更新：定時重跑可能打斷抽球動畫，所以改成按「更新」手動刷新
-    # (按鈕在 fragment 裡，只會重跑這一小塊，不會影響抽球)
     _fragment = st.fragment if hasattr(st, "fragment") else (lambda f: f)
 
     @_fragment
