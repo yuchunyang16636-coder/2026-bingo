@@ -349,8 +349,6 @@ st.markdown("""
 
     /* ==========================================
         🌟 手機 5x5 方格 (鎖定後的顯示用，整個網格由單一 HTML 輸出)
-        格子之間的間距改用 margin，這樣每格的中心剛好落在 10%、30%、50%、70%、90%，
-        連線的線條才能精準對齊。
         ========================================== */
     .grid-wrap {
         position: relative;
@@ -417,13 +415,15 @@ st.markdown("""
     }
     div[data-testid="stForm"] div[data-baseweb="input"],
     div[data-testid="stForm"] div[data-baseweb="base-input"] {
-        background: rgba(255, 255, 255, 0.92) !important;
+        background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
         border-radius: 10px !important;
     }
     div[data-testid="stForm"] div[data-baseweb="input"] {
-        border: 2px solid rgba(255, 255, 255, 0.9) !important;
+        border: 2px solid #E0E0E0 !important;
     }
     div[data-testid="stForm"] input {
+        background-color: #FFFFFF !important;
         text-align: center !important;
         font-size: 18px !important;
         font-weight: bold !important;
@@ -699,7 +699,7 @@ if mode == "player":
         st.stop()
     
     if not st.session_state['card_locked']:
-        st.markdown('<div class="bingo-subtitle">請在下方填入 25 個數字（1-99），鎖定後無法修改！</div>', unsafe_allow_html=True)
+        st.markdown('<div class="bingo-subtitle">下に25個の数字（1〜99）を入力してください。確定後の変更はできません！</div>', unsafe_allow_html=True)
         
         if st.button("🎲 一括ランダム生成"):
             new_nums = random.sample(range(1, 100), 25)
